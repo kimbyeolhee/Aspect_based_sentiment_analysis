@@ -7,13 +7,24 @@ args.add_argument("--model", type=str, default="xlm-roberta-base")
 args.add_argument("--classifier_hidden_size", type=int, default=768)
 args.add_argument("--classifier_dropout_prob", type=int, default=0.1)
 
+
+### HyperParameters ###
+args.add_argument("--batch_size", type=int, default=16)
+args.add_argument("--learning_rate", type=float, default=3e-5)
+args.add_argument("--eps", type=float, default=1e-8)
+args.add_argument("--num_train_epochs", type=int, default=10)
+args.add_argument("--max_grad_norm", type=float, default=1.0)
+
+## Training ##
+args.add_argument(
+    "--full_finetuning", type=lambda s: s.lower() in ["true", "1"], default=True
+)
+
+
 ### DATA PATH ###
-args.add_argument(
-    "--train_data_dir", type=str, default="./data/nikluge-sa-2022-train.jsonl"
-)
-args.add_argument(
-    "--valid_data_dir", type=str, default="./data/nikluge-sa-2022-dev.jsonl"
-)
+args.add_argument("--train_data_dir", type=str, default="./data/sample.jsonl")
+args.add_argument("--valid_data_dir", type=str, default="./data/sample.jsonl")
+args.add_argument("--test_data_dir", type=str, default="./data/sample.jsonl")
 
 ### SAVED MODEL PATH ###
 args.add_argument(
@@ -21,14 +32,19 @@ args.add_argument(
 )
 args.add_argument("--polarity_model_path", type=str, default="./saved_models/polarity/")
 
-### HyperParameters ###
-args.add_argument("--batch_size", type=int, default=32)
-args.add_argument("--learning_rate", type=float, default=3e-5)
-args.add_argument("--eps", type=float, default=1e-8)
-args.add_argument("--num_train_epochs", type=int, default=2)
-args.add_argument("--max_grad_norm", type=float, default=1.0)
+### LOADED MODEL PATH ###
+args.add_argument(
+    "--loaded_entity_property_model_path",
+    type=str,
+    default="./saved_models/entity_property/saved_model_epoch_1.pt",
+)
+args.add_argument(
+    "--loaded_polarity_model_path",
+    type=str,
+    default="./saved_models/polarity/saved_model_epoch_1.pt",
+)
 
-### ?? ###
+### ETC ###
 args.add_argument("--max_len", type=int, default=256)
 args.add_argument(
     "--entity_property_pair",

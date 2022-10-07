@@ -12,7 +12,6 @@ class Trainer:
         model,
         criterion,
         optimizer,
-        metric_funcs,
         device,
         train_data_loader,
         valid_data_loader=None,
@@ -25,7 +24,6 @@ class Trainer:
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
-        self.metric_funcs = metric_funcs
         self.device = device
         self.train_dataloader = train_data_loader
         self.valid_dataloader = valid_data_loader
@@ -46,6 +44,7 @@ class Trainer:
             total_loss = 0
 
             for step, batch in enumerate(self.train_dataloader):
+
                 batch = tuple(t.to(self.device) for t in batch)
                 b_input_ids, b_input_mask, b_labels = batch
                 self.model.zero_grad()
@@ -60,18 +59,17 @@ class Trainer:
                 )
                 self.optimizer.step()
                 self.lr_scheduler.step()
-                break
-            break
 
-        avg_train_loss = total_loss / len(self.train_dataloader)
-        print(f"Epoch: {epoch_step} | avg train loss: {avg_train_loss}")
+            avg_train_loss = total_loss / len(self.train_dataloader)
+            print(f"Epoch: {epoch_step} | avg train loss: {avg_train_loss}")
 
-        model_saved_path = (
-            self.saved_path + "saved_model_epoch_" + str(epoch_step) + ".pt"
-        )
-        torch.save(self.model.state_dict(), model_saved_path)
+            model_saved_path = (
+                self.saved_path + "saved_model_epoch_" + str(epoch_step) + ".pt"
+            )
+            torch.save(self.model.state_dict(), model_saved_path)
 
         # evaluation
+        print("🔥evaluation🔥")
         self.model.eval()
 
         pred_list = []
@@ -87,6 +85,5 @@ class Trainer:
             predictions = torch.argmax(logits, dim=-1)
             pred_list.extend(predictions)
             label_list.extend(b_labels)
-            break
 
         evaluate(label_list, pred_list, label_len)

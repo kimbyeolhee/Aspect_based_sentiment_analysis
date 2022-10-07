@@ -40,6 +40,7 @@ def tokenize_and_align_labels(tokenizer, form, annotations, config):
         tokenized_data = tokenizer(
             form, pair, padding="max_length", max_length=config.max_len, truncation=True
         )
+
         for annotation in annotations:
             entity_property = annotation[0]  # 속성 범주
             polarity = annotation[2]  # 감성
@@ -75,7 +76,6 @@ def tokenize_and_align_labels(tokenizer, form, annotations, config):
 
 def get_dataset(raw_data, tokenizer, config):
     """
-
     Args:
         raw_data (jsonl): jsonl 데이터
         tokenizer : 정의한 tokenizer
