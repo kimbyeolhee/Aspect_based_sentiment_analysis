@@ -9,7 +9,7 @@ args.add_argument("--classifier_dropout_prob", type=int, default=0.1)
 
 
 ### HyperParameters ###
-args.add_argument("--batch_size", type=int, default=16)
+args.add_argument("--batch_size", type=int, default=32)
 args.add_argument("--learning_rate", type=float, default=3e-5)
 args.add_argument("--eps", type=float, default=1e-8)
 args.add_argument("--num_train_epochs", type=int, default=10)
@@ -22,9 +22,15 @@ args.add_argument(
 
 
 ### DATA PATH ###
-args.add_argument("--train_data_dir", type=str, default="./data/sample.jsonl")
-args.add_argument("--valid_data_dir", type=str, default="./data/sample.jsonl")
-args.add_argument("--test_data_dir", type=str, default="./data/sample.jsonl")
+args.add_argument(
+    "--train_data_dir", type=str, default="./data/nikluge-sa-2022-train.jsonl"
+)
+args.add_argument(
+    "--valid_data_dir", type=str, default="./data/nikluge-sa-2022-dev.jsonl"
+)
+args.add_argument(
+    "--test_data_dir", type=str, default="./data/nikluge-sa-2022-test.jsonl"
+)
 
 ### SAVED MODEL PATH ###
 args.add_argument(
@@ -36,12 +42,12 @@ args.add_argument("--polarity_model_path", type=str, default="./saved_models/pol
 args.add_argument(
     "--loaded_entity_property_model_path",
     type=str,
-    default="./saved_models/entity_property/saved_model_epoch_1.pt",
+    default="./saved_models/entity_property/saved_model_epoch_10.pt",
 )
 args.add_argument(
     "--loaded_polarity_model_path",
     type=str,
-    default="./saved_models/polarity/saved_model_epoch_1.pt",
+    default="./saved_models/polarity/saved_model_epoch_10.pt",
 )
 
 ### ETC ###

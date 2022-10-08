@@ -1,7 +1,8 @@
 # datafile
 *jsonl
 
-# model
+# model 
 *pt
 
+# etc
 __pycache__

@@ -3,8 +3,6 @@ import copy
 
 import torch
 from transformers import AutoTokenizer
-from dataset.dataset import get_dataset
-from torch.utils.data import DataLoader
 from models.model import RoBertaBaseClassifier
 
 from configs.configs import config
@@ -17,8 +15,6 @@ def predict_from_korean_form(tokenizer, ep_model, p_model, data, config, device)
 
     ep_model.to(device)
     ep_model.eval()
-
-    temp = []
 
     for sentence in data:
         form = sentence["sentence_form"]
@@ -47,7 +43,7 @@ def predict_from_korean_form(tokenizer, ep_model, p_model, data, config, device)
             ep_result = label_id_to_name[ep_predictions[0]]
 
             if ep_result == "True":
-                print("🦔")
+                # Entity property이 True인 경우 Polarity 예측"
                 with torch.no_grad():
                     _, p_logits = p_model(input_ids, attention_mask)
 
@@ -55,9 +51,9 @@ def predict_from_korean_form(tokenizer, ep_model, p_model, data, config, device)
                 p_result = polarity_id_to_name[p_predictions[0]]
 
                 sentence["annotation"].append([pair, p_result])
-                temp.append(sentence["annotation"])
+
     print("🔥END")
-    return temp
+    return data
 
 
 def main(config):
@@ -79,24 +75,16 @@ def main(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     ### tokenizer ###
+    print("🔥Loaded Tokenizer")
     tokenizer = AutoTokenizer.from_pretrained(config.model)
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
 
     ### Dataset ###
+    print("🔥Get Dataset")
     test_data = jsonlload(config.test_data_dir)
-    # entity_property_test_dataset, polarity_test_dataset = get_dataset(
-    #     test_data, tokenizer, config
-    # )
-
-    # ### DataLoader ###
-    # entity_property_test_dataloader = DataLoader(
-    #     entity_property_test_dataset, shuffle=True, batch_size=config.batch_size
-    # )
-    # polarity_test_dataloader = DataLoader(
-    #     polarity_test_dataset, shuffle=True, batch_size=config.batch_size
-    # )
 
     ### Load Model ###
+    print("🔥Loaded Entity property model")
     entity_property_model = RoBertaBaseClassifier(
         config, num_label=len(label_id_to_name), len_tokenizer=len(tokenizer)
     )
@@ -106,6 +94,7 @@ def main(config):
     entity_property_model.to(device)
     entity_property_model.eval()
 
+    print("🔥Loaded Polarity model")
     polarity_model = RoBertaBaseClassifier(
         config, num_label=len(polarity_id_to_name), len_tokenizer=len(tokenizer)
     )
@@ -116,6 +105,7 @@ def main(config):
     polarity_model.eval()
 
     # Predict
+    print("🔥🔥🔥Infernce🔥🔥🔥")
     pred_data = predict_from_korean_form(
         tokenizer,
         entity_property_model,
