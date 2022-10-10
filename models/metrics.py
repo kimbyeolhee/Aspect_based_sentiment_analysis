@@ -35,3 +35,5 @@ def evaluate(y_true, y_pred, label_len):
     print("f1_score: ", eval_f1_score)
     print("f1_score_micro: ", f1_score_micro)
     print("f1_score_macro: ", f1_score_macro)
+
+    return accuracy

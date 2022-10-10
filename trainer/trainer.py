@@ -4,6 +4,9 @@ import os
 from tqdm import trange
 from models.metrics import evaluate
 
+from configs.configs import config
+import wandb
+
 
 class Trainer:
     def __init__(
@@ -19,7 +22,6 @@ class Trainer:
         saved_path=None,
     ):
         self.config = config
-        # logger 추가하기 나중에
 
         self.model = model
         self.criterion = criterion
@@ -62,6 +64,7 @@ class Trainer:
 
             avg_train_loss = total_loss / len(self.train_dataloader)
             print(f"Epoch: {epoch_step} | avg train loss: {avg_train_loss}")
+            wandb.log({"train_loss": avg_train_loss})
 
             model_saved_path = (
                 self.saved_path + "saved_model_epoch_" + str(epoch_step) + ".pt"
@@ -74,6 +77,7 @@ class Trainer:
 
         pred_list = []
         label_list = []
+        total_loss = 0
 
         for batch in self.valid_dataloader:
             batch = tuple(t.to(self.device) for t in batch)
@@ -86,4 +90,6 @@ class Trainer:
             pred_list.extend(predictions)
             label_list.extend(b_labels)
 
-        evaluate(label_list, pred_list, label_len)
+        avg_valid_loss = total_loss / len(self.valid_dataloader)
+        eval_acc = evaluate(label_list, pred_list, label_len)
+        wandb.log({"avg_valid_loss": avg_valid_loss, "eval_acc": eval_acc})

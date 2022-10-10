@@ -6,3 +6,6 @@
 
 # etc
 __pycache__
+
+# wandb
+wandb

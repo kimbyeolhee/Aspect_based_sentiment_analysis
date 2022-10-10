@@ -13,6 +13,8 @@ from dataset.dataset import get_dataset
 from configs.configs import config
 from utils.util import jsonload, jsonlload
 
+import wandb
+
 # Set random seed
 SEED = 12
 np.random.seed(SEED)
@@ -163,7 +165,12 @@ def main(config):
     polarity_scheduler = get_linear_schedule_with_warmup(
         polarity_optimizer, num_warmup_steps=0, num_training_steps=total_steps
     )
+
     print("🔥Training Start --- Entity Property Model")
+    wandb.init(
+        project="20221009-Entity_property", entity="kimbyeolhee", name=config.wand_name
+    )
+    wandb.config.update(config)
     # Entity_property_model Train
     entity_property_model_trainer = Trainer(
         config,
@@ -183,6 +190,8 @@ def main(config):
     entity_property_model_trainer.train(label_len=len(label_id_to_name))
 
     # Polarity_model Train
+    wandb.init(project="20221009-Polarity", entity="kimbyeolhee", name=config.wand_name)
+    wandb.config.update(config)
     print("🔥Training Start --- Polarity Model")
     polarity_model_trainer = Trainer(
         config,

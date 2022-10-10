@@ -2,6 +2,9 @@ import argparse
 
 args = argparse.ArgumentParser(description="PyTorch Template")
 
+### WandB
+args.add_argument("--wand_name", type=str, default="v_0.0")
+
 ### MODEL ###
 args.add_argument("--model", type=str, default="xlm-roberta-base")
 args.add_argument("--classifier_hidden_size", type=int, default=768)
