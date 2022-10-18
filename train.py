@@ -9,8 +9,9 @@ from transformers import get_linear_schedule_with_warmup
 from trainer.trainer import Trainer
 
 from dataset.dataloader import get_dataloader
+from models.utils import get_model
 from configs.configs import config
-from utils.util import jsonload, jsonlload
+from utils.utils import jsonload, jsonlload
 
 import wandb
 
@@ -58,12 +59,12 @@ def main(config):
     )
 
     # Load model
-    entity_property_model = RoBertaBaseClassifier(
+    entity_property_model = get_model(
         config, num_label=len(label_id_to_name), len_tokenizer=len(tokenizer)
     )
     entity_property_model.to(device)
 
-    polarity_model = RoBertaBaseClassifier(
+    polarity_model = get_model(
         config, num_label=len(polarity_id_to_name), len_tokenizer=len(tokenizer)
     )
     polarity_model.to(device)
@@ -198,5 +199,5 @@ def main(config):
 
 if __name__ == "__main__":
     config = config
-
-    main(config)
+    get_model(config)
+    # main(config)
