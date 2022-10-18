@@ -2,14 +2,13 @@ import json
 import numpy as np
 
 import torch, gc
-from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 from models.model import RoBertaBaseClassifier
 from torch.optim import AdamW
 from transformers import get_linear_schedule_with_warmup
 from trainer.trainer import Trainer
 
-from dataset.dataset import get_dataset
+from dataset.dataloader import get_dataloader
 from configs.configs import config
 from utils.util import jsonload, jsonlload
 
@@ -50,27 +49,12 @@ def main(config):
     tokenizer = AutoTokenizer.from_pretrained(config.model)
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
 
-    # Dataset
-    entity_property_train_dataset, polarity_train_dataset = get_dataset(
+    # DataLoader
+    entity_property_train_dataloader, polarity_train_dataloader = get_dataloader(
         train_data, tokenizer, config
     )
-    entity_property_dev_dataset, polarity_dev_dataset = get_dataset(
+    entity_property_dev_dataloader, polarity_dev_dataloader = get_dataloader(
         dev_data, tokenizer, config
-    )
-
-    # DataLoader
-    entity_property_train_dataloader = DataLoader(
-        entity_property_train_dataset, shuffle=True, batch_size=config.batch_size
-    )
-    entity_property_dev_dataloader = DataLoader(
-        entity_property_dev_dataset, shuffle=True, batch_size=config.batch_size
-    )
-
-    polarity_train_dataloader = DataLoader(
-        polarity_train_dataset, shuffle=True, batch_size=config.batch_size
-    )
-    polarity_dev_dataloader = DataLoader(
-        polarity_dev_dataset, shuffle=True, batch_size=config.batch_size
     )
 
     # Load model
