@@ -6,7 +6,12 @@ args = argparse.ArgumentParser(description="PyTorch Template")
 args.add_argument("--wand_name", type=str, default="v_0.0")
 
 ### MODEL ###
-args.add_argument("--model", type=str, default="xlm-roberta-base")
+args.add_argument(
+    "--model",
+    type=str,
+    default="xlm-roberta-base",
+    help="xlm-roberta-base | monologg/koelectra-base-v3-discriminator",
+)
 args.add_argument("--classifier_hidden_size", type=int, default=768)
 args.add_argument("--classifier_dropout_prob", type=int, default=0.1)
 
