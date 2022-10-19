@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from transformers import XLMRobertaModel
-from transformers import ElectraModel, ElectraTokenizer
+from transformers import ElectraModel
 
 
 class SimpleClassifier(nn.Module):

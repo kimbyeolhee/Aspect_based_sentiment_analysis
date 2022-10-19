@@ -70,7 +70,6 @@ def main(config):
     polarity_model.to(device)
 
     # Entity_property_model Optimizer Setting
-    FULL_FINETUNING = True
     if config.full_finetuning:
         entity_property_param_optimizer = list(entity_property_model.named_parameters())
         no_decay = ["bias", "gamma", "beta"]
