@@ -10,7 +10,7 @@ from trainer.trainer import Trainer
 from dataset.dataloader import get_dataloader
 from models.utils import get_model
 from configs.configs import config
-from utils.utils import jsonload, jsonlload
+from utils.utils import get_labels, jsonlload
 
 import wandb
 
@@ -27,8 +27,9 @@ def main(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("🔥device : ", device)
 
-    label_id_to_name = ["True", "False"]
-    polarity_id_to_name = ["positive", "negative", "neutral"]
+    labels = get_labels()
+    label_id_to_name = labels["label_id_to_name"] #["True", "False"]
+    polarity_id_to_name = labels["polarity_id_to_name"] #["positive", "negative", "neutral"]
     special_tokens_dict = {
         "additional_special_tokens": [
             "&name&",

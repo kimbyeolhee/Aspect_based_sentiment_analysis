@@ -3,6 +3,8 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset
 
+from utils.utils import get_labels
+
 
 def tokenize_and_align_labels(tokenizer, form, annotations, config):
     """sentence_form과 annotation을 받아서 속성범주 일치 여부 별 tokenize된 값들이 담긴 dictionary와 감성 정보 별 tokenized된 값들이 담긴 dictionary 반환
@@ -21,15 +23,11 @@ def tokenize_and_align_labels(tokenizer, form, annotations, config):
     entity_property_data_dict = {"input_ids": [], "attention_mask": [], "label": []}
     polarity_data_dict = {"input_ids": [], "attention_mask": [], "label": []}
 
-    label_id_to_name = ["True", "False"]
-    label_name_to_id = {
-        label_id_to_name[i]: i for i in range(len(label_id_to_name))
-    }  # {'True': 0, 'False': 1}
-
-    polarity_id_to_name = ["positive", "negative", "neutral"]
-    polarity_name_to_id = {
-        polarity_id_to_name[i]: i for i in range(len(polarity_id_to_name))
-    }  # {'positive': 0, 'negative': 1, 'neutral': 2}
+    labels = get_labels()
+    label_name_to_id = labels["label_name_to_id"]  # {'True': 0, 'False': 1}
+    polarity_name_to_id = labels[
+        "polarity_name_to_id"
+    ]  # {'positive': 0, 'negative': 1, 'neutral': 2}
 
     for pair in config.entity_property_pair:
         isPairInOpinion = False
