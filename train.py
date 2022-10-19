@@ -3,9 +3,8 @@ import numpy as np
 
 import torch, gc
 from transformers import AutoTokenizer
-from models.model import RoBertaBaseClassifier
-from torch.optim import AdamW
 from transformers import get_linear_schedule_with_warmup
+from models.optimizer import get_optimizer
 from trainer.trainer import Trainer
 
 from dataset.dataloader import get_dataloader
@@ -69,42 +68,9 @@ def main(config):
     )
     polarity_model.to(device)
 
-    # Entity_property_model Optimizer Setting
-    if config.full_finetuning:
-        entity_property_param_optimizer = list(entity_property_model.named_parameters())
-        no_decay = ["bias", "gamma", "beta"]
-        entity_property_optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p
-                    for n, p in entity_property_param_optimizer
-                    if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.01,
-            },
-            {
-                "params": [
-                    p
-                    for n, p in entity_property_param_optimizer
-                    if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.0,
-            },
-        ]
+    # Entity_property_model Optimizer
+    entity_property_optimizer = get_optimizer(config, entity_property_model)
 
-    else:
-        entity_property_param_optimizer = list(
-            entity_property_model.classifier.named_parameters()
-        )
-        entity_property_optimizer_grouped_parameters = [
-            {"params": [p for n, p in entity_property_param_optimizer]}
-        ]
-
-    entity_property_optimizer = AdamW(
-        entity_property_optimizer_grouped_parameters,
-        lr=config.learning_rate,
-        eps=config.eps,
-    )
     epochs = config.num_train_epochs
     total_steps = epochs * len(entity_property_train_dataloader)
 
@@ -112,37 +78,9 @@ def main(config):
         entity_property_optimizer, num_warmup_steps=0, num_training_steps=total_steps
     )
 
-    # Polarity_model Optimizer Setting
-    if config.full_finetuning:
-        polarity_param_optimizer = list(polarity_model.named_parameters())
-        no_decay = ["bias", "gamma", "beta"]
-        polarity_optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p
-                    for n, p in polarity_param_optimizer
-                    if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.01,
-            },
-            {
-                "params": [
-                    p
-                    for n, p in polarity_param_optimizer
-                    if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.0,
-            },
-        ]
-    else:
-        polarity_param_optimizer = list(polarity_model.named_parameters())
-        polarity_optimizer_grouped_parameters = [
-            {"params": [p for n, p in polarity_param_optimizer]}
-        ]
+    # Polarity_model Optimizer
+    polarity_optimizer = get_optimizer(config, polarity_model)
 
-    polarity_optimizer = AdamW(
-        polarity_optimizer_grouped_parameters, lr=config.learning_rate, eps=config.eps
-    )
     epochs = config.num_train_epochs
     total_steps = epochs * len(polarity_train_dataloader)
 
