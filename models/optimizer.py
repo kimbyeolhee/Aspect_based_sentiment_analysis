@@ -2,6 +2,15 @@ from torch.optim import AdamW
 
 
 def get_optimizer(config, model):
+    """config.full_finetuning 값에 따라 full_finetuning 여부를 결정하고 사용할 optimizer를 정의함
+
+    Args:
+        config : configs.configs
+        model : 사용할 모델
+
+    Returns:
+        optimizer
+    """
     if config.full_finetuning:
         param_optimizer = list(model.named_parameters())
         no_decay = ["bias", "gamma", "beta"]
