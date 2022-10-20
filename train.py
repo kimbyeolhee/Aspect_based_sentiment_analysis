@@ -28,8 +28,10 @@ def main(config):
     print("🔥device : ", device)
 
     labels = get_labels()
-    label_id_to_name = labels["label_id_to_name"] #["True", "False"]
-    polarity_id_to_name = labels["polarity_id_to_name"] #["positive", "negative", "neutral"]
+    label_id_to_name = labels["label_id_to_name"]  # ["True", "False"]
+    polarity_id_to_name = labels[
+        "polarity_id_to_name"
+    ]  # ["positive", "negative", "neutral"]
     special_tokens_dict = {
         "additional_special_tokens": [
             "&name&",
@@ -137,5 +139,5 @@ def main(config):
 
 if __name__ == "__main__":
     config = config
-    get_model(config)
-    # main(config)
+
+    main(config)

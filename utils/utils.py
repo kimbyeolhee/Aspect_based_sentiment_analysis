@@ -1,7 +1,7 @@
 import json
 
 
-def get_labels(f_path="./label.json"):
+def get_labels(f_path="./utils/label.json"):
     """label_to_id 및 label_name_to_id를 json 파일로부터 불러옴
 
     Args:
@@ -13,7 +13,7 @@ def get_labels(f_path="./label.json"):
 
     with open(f_path, "r") as f:
         labels = json.load(f)
-        
+
     return labels
 
 

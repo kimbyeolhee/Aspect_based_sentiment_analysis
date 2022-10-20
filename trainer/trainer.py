@@ -34,11 +34,13 @@ class Trainer:
 
         self.epochs = config.num_train_epochs
 
-    def train_per_one_batch(self, batch):
-        """한 batch를 학습
+    def train_per_one_batch(self, batch, total_loss):
+        """한 batch를 학습하고 total_loss를 업데이트하여 반환
 
         Args:
             batch : dataloader의 batch
+        Returns:
+            total_loss
         """
         batch = tuple(t.to(self.device) for t in batch)
         b_input_ids, b_input_mask, b_labels = batch
@@ -54,6 +56,7 @@ class Trainer:
         )
         self.optimizer.step()
         self.lr_scheduler.step()
+        return total_loss
 
     def train(self, label_len):
         if not os.path.exists(self.saved_path):
@@ -67,7 +70,7 @@ class Trainer:
             total_loss = 0
 
             for step, batch in enumerate(self.train_dataloader):
-                self.train_per_one_batch(batch)
+                total_loss = self.train_per_one_batch(batch, total_loss)
 
             avg_train_loss = total_loss / len(self.train_dataloader)
             print(f"Epoch: {epoch_step} | avg train loss: {avg_train_loss}")
