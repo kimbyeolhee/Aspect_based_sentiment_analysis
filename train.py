@@ -2,16 +2,15 @@ import json
 import numpy as np
 
 import torch, gc
-from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
-from models.model import RoBertaBaseClassifier
-from torch.optim import AdamW
 from transformers import get_linear_schedule_with_warmup
+from models.optimizer import get_optimizer
 from trainer.trainer import Trainer
 
-from dataset.dataset import get_dataset
+from dataset.dataloader import get_dataloader
+from models.utils import get_model
 from configs.configs import config
-from utils.util import jsonload, jsonlload
+from utils.utils import get_labels, jsonlload
 
 import wandb
 
@@ -28,8 +27,11 @@ def main(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("🔥device : ", device)
 
-    label_id_to_name = ["True", "False"]
-    polarity_id_to_name = ["positive", "negative", "neutral"]
+    labels = get_labels()
+    label_id_to_name = labels["label_id_to_name"]  # ["True", "False"]
+    polarity_id_to_name = labels[
+        "polarity_id_to_name"
+    ]  # ["positive", "negative", "neutral"]
     special_tokens_dict = {
         "additional_special_tokens": [
             "&name&",
@@ -50,77 +52,28 @@ def main(config):
     tokenizer = AutoTokenizer.from_pretrained(config.model)
     num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
 
-    # Dataset
-    entity_property_train_dataset, polarity_train_dataset = get_dataset(
+    # DataLoader
+    entity_property_train_dataloader, polarity_train_dataloader = get_dataloader(
         train_data, tokenizer, config
     )
-    entity_property_dev_dataset, polarity_dev_dataset = get_dataset(
+    entity_property_dev_dataloader, polarity_dev_dataloader = get_dataloader(
         dev_data, tokenizer, config
     )
 
-    # DataLoader
-    entity_property_train_dataloader = DataLoader(
-        entity_property_train_dataset, shuffle=True, batch_size=config.batch_size
-    )
-    entity_property_dev_dataloader = DataLoader(
-        entity_property_dev_dataset, shuffle=True, batch_size=config.batch_size
-    )
-
-    polarity_train_dataloader = DataLoader(
-        polarity_train_dataset, shuffle=True, batch_size=config.batch_size
-    )
-    polarity_dev_dataloader = DataLoader(
-        polarity_dev_dataset, shuffle=True, batch_size=config.batch_size
-    )
-
     # Load model
-    entity_property_model = RoBertaBaseClassifier(
+    entity_property_model = get_model(
         config, num_label=len(label_id_to_name), len_tokenizer=len(tokenizer)
     )
     entity_property_model.to(device)
 
-    polarity_model = RoBertaBaseClassifier(
+    polarity_model = get_model(
         config, num_label=len(polarity_id_to_name), len_tokenizer=len(tokenizer)
     )
     polarity_model.to(device)
 
-    # Entity_property_model Optimizer Setting
-    FULL_FINETUNING = True
-    if config.full_finetuning:
-        entity_property_param_optimizer = list(entity_property_model.named_parameters())
-        no_decay = ["bias", "gamma", "beta"]
-        entity_property_optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p
-                    for n, p in entity_property_param_optimizer
-                    if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.01,
-            },
-            {
-                "params": [
-                    p
-                    for n, p in entity_property_param_optimizer
-                    if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.0,
-            },
-        ]
+    # Entity_property_model Optimizer
+    entity_property_optimizer = get_optimizer(config, entity_property_model)
 
-    else:
-        entity_property_param_optimizer = list(
-            entity_property_model.classifier.named_parameters()
-        )
-        entity_property_optimizer_grouped_parameters = [
-            {"params": [p for n, p in entity_property_param_optimizer]}
-        ]
-
-    entity_property_optimizer = AdamW(
-        entity_property_optimizer_grouped_parameters,
-        lr=config.learning_rate,
-        eps=config.eps,
-    )
     epochs = config.num_train_epochs
     total_steps = epochs * len(entity_property_train_dataloader)
 
@@ -128,37 +81,9 @@ def main(config):
         entity_property_optimizer, num_warmup_steps=0, num_training_steps=total_steps
     )
 
-    # Polarity_model Optimizer Setting
-    if config.full_finetuning:
-        polarity_param_optimizer = list(polarity_model.named_parameters())
-        no_decay = ["bias", "gamma", "beta"]
-        polarity_optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p
-                    for n, p in polarity_param_optimizer
-                    if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.01,
-            },
-            {
-                "params": [
-                    p
-                    for n, p in polarity_param_optimizer
-                    if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.0,
-            },
-        ]
-    else:
-        polarity_param_optimizer = list(polarity_model.named_parameters())
-        polarity_optimizer_grouped_parameters = [
-            {"params": [p for n, p in polarity_param_optimizer]}
-        ]
+    # Polarity_model Optimizer
+    polarity_optimizer = get_optimizer(config, polarity_model)
 
-    polarity_optimizer = AdamW(
-        polarity_optimizer_grouped_parameters, lr=config.learning_rate, eps=config.eps
-    )
     epochs = config.num_train_epochs
     total_steps = epochs * len(polarity_train_dataloader)
 

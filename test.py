@@ -3,15 +3,18 @@ import copy
 
 import torch
 from transformers import AutoTokenizer
-from models.model import RoBertaBaseClassifier
+from models.utils import get_model
 
 from configs.configs import config
-from utils.util import jsonlload, jsondump
+from utils.utils import jsonlload, jsondump, get_labels
 
 
-def predict_from_korean_form(tokenizer, ep_model, p_model, data, config, device):
-    label_id_to_name = ["True", "False"]
-    polarity_id_to_name = ["positive", "negative", "neutral"]
+def predict_from_korean_form(
+    labels, tokenizer, ep_model, p_model, data, config, device
+):
+
+    label_id_to_name = labels["label_id_to_name"]
+    polarity_id_to_name = labels["polarity_id_to_name"]
 
     ep_model.to(device)
     ep_model.eval()
@@ -57,8 +60,12 @@ def predict_from_korean_form(tokenizer, ep_model, p_model, data, config, device)
 
 
 def main(config):
-    label_id_to_name = ["True", "False"]
-    polarity_id_to_name = ["positive", "negative", "neutral"]
+    labels = get_labels()
+    label_id_to_name = labels["label_id_to_name"]  # ["True", "False"]
+    polarity_id_to_name = labels[
+        "polarity_id_to_name"
+    ]  # ["positive", "negative", "neutral"]
+
     special_tokens_dict = {
         "additional_special_tokens": [
             "&name&",
@@ -85,7 +92,7 @@ def main(config):
 
     ### Load Model ###
     print("🔥Loaded Entity property model")
-    entity_property_model = RoBertaBaseClassifier(
+    entity_property_model = get_model(
         config, num_label=len(label_id_to_name), len_tokenizer=len(tokenizer)
     )
     entity_property_model.load_state_dict(
@@ -95,7 +102,7 @@ def main(config):
     entity_property_model.eval()
 
     print("🔥Loaded Polarity model")
-    polarity_model = RoBertaBaseClassifier(
+    polarity_model = get_model(
         config, num_label=len(polarity_id_to_name), len_tokenizer=len(tokenizer)
     )
     polarity_model.load_state_dict(
@@ -107,6 +114,7 @@ def main(config):
     # Predict
     print("🔥🔥🔥Infernce🔥🔥🔥")
     pred_data = predict_from_korean_form(
+        labels,
         tokenizer,
         entity_property_model,
         polarity_model,

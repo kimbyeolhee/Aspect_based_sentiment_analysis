@@ -1,0 +1,20 @@
+{
+    "label_id_to_name": [
+        "True",
+        "False"
+    ],
+    "label_name_to_id": {
+        "True": 0,
+        "False": 1
+    },
+    "polarity_id_to_name": [
+        "positive",
+        "negative",
+        "neutral"
+    ],
+    "polarity_name_to_id": {
+        "positive": 0,
+        "negative": 1,
+        "neutral": 2
+    }
+}

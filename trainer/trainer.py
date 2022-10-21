@@ -34,6 +34,30 @@ class Trainer:
 
         self.epochs = config.num_train_epochs
 
+    def train_per_one_batch(self, batch, total_loss):
+        """한 batch를 학습하고 total_loss를 업데이트하여 반환
+
+        Args:
+            batch : dataloader의 batch
+        Returns:
+            total_loss
+        """
+        batch = tuple(t.to(self.device) for t in batch)
+        b_input_ids, b_input_mask, b_labels = batch
+        self.model.zero_grad()
+
+        loss, _ = self.model(b_input_ids, b_input_mask, b_labels)
+        loss.backward()
+        total_loss += loss.item()
+
+        torch.nn.utils.clip_grad_norm_(
+            parameters=self.model.parameters(),
+            max_norm=self.config.max_grad_norm,
+        )
+        self.optimizer.step()
+        self.lr_scheduler.step()
+        return total_loss
+
     def train(self, label_len):
         if not os.path.exists(self.saved_path):
             os.makedirs(self.saved_path)
@@ -46,21 +70,7 @@ class Trainer:
             total_loss = 0
 
             for step, batch in enumerate(self.train_dataloader):
-
-                batch = tuple(t.to(self.device) for t in batch)
-                b_input_ids, b_input_mask, b_labels = batch
-                self.model.zero_grad()
-
-                loss, _ = self.model(b_input_ids, b_input_mask, b_labels)
-                loss.backward()
-                total_loss += loss.item()
-
-                torch.nn.utils.clip_grad_norm_(
-                    parameters=self.model.parameters(),
-                    max_norm=self.config.max_grad_norm,
-                )
-                self.optimizer.step()
-                self.lr_scheduler.step()
+                total_loss = self.train_per_one_batch(batch, total_loss)
 
             avg_train_loss = total_loss / len(self.train_dataloader)
             print(f"Epoch: {epoch_step} | avg train loss: {avg_train_loss}")
